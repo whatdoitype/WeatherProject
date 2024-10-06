@@ -13,27 +13,29 @@ function Get-Weather{
         $State,
 
         [Parameter()]
-        [ValidateSet("imperial","standard","metric")]
+        [ValidateSet("Farenheit","Kelvin","Celsius")]
         [string]
-        $Units = "imperial"
+        $Units = "Farenheit"
     )
-    $location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
-    $weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey -Units $Units
-    $temperature = [Math]::round($weather.main.temp)
-    $mintemp = [Math]::round($weather.main.temp_min)
-    $maxtemp = [Math]::round($weather.main.temp_max)
 
     $tempUnit = switch ($Units){
-        "imperial" {"Farenheit"}
-        "metric" {"Celsius"}
-        "standard" {"Kelvin"}
-        default {"Farenheit"}
+        "Farenheit" {"imperial"}
+        "Celsius" {"metric"}
+        "Kelvin" {"standard"}
+        default {"imperial"}
     }
 
+    $location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
+    $weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey -Units $tempUnit
+
+    $temperature = [Math]::round($weather.main.temp)
+    $mintemp = [Math]::round($weather.main.temp_min)
+    $maxtemp = [Math]::round($weather.main.temp_max)    
+
     Write-Host "The weather in $City, $State today features $($weather.weather.description)."
-    Write-Host "The min temperature is $mintemp degrees $tempUnit."
-    Write-Host "The max temperature is $maxtemp degrees $tempUnit."
-    Write-Host "The current temperature is $temperature degrees $tempUnit."
+    Write-Host "The min temperature is $mintemp degrees $Units."
+    Write-Host "The max temperature is $maxtemp degrees $Units."
+    Write-Host "The current temperature is $temperature degrees $Units."
 }
 
 function Get-WeatherFromLatLon{
@@ -106,4 +108,4 @@ function Get-WeatherLocation{
     return $output
 }
 
-Get-Weather -City "Tallahassee" -State "Florida" -Units "Imperial"
+Get-Weather -City "Tallahassee" -State "Florida"
