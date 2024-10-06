@@ -13,6 +13,10 @@ param(
     $Units = "Farenheit"
 )
 
+# Enter API key for OpenWeatherMap
+# https://openweathermap.org/
+$APIKey = "98abd06c92bf652c48d3c50f9582113b"
+
 function Get-WeatherFromLatLon{
     param(
         [Parameter()]
@@ -80,12 +84,14 @@ function Get-WeatherLocation{
     }
 
     $output = Invoke-RestMethod @params
+    
+    if ($null -eq $output.name){
+        Write-Error "$City, $State is not a valid location. Please try again."
+        break;
+    }
+
     return $output
 }
-
-# Enter API key for OpenWeatherMap
-# https://openweathermap.org/
-$APIKey = "98abd06c92bf652c48d3c50f9582113b"
 
 $tempUnit = switch ($Units){
     "Farenheit" {"imperial"}
@@ -94,14 +100,14 @@ $tempUnit = switch ($Units){
     default {"imperial"}
 }
 
-$location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
-$weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey -Units $tempUnit
+$location = Get-WeatherLocation -City $city -State $State -APIKey $APIKey
+$weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $APIKey -Units $tempUnit
 
 $temperature = [Math]::round($weather.main.temp)
 $mintemp = [Math]::round($weather.main.temp_min)
 $maxtemp = [Math]::round($weather.main.temp_max)    
 
-Write-Host "The weather in $City, $State today features $($weather.weather.description)."
-Write-Host "The min temperature is $mintemp degrees $Units."
-Write-Host "The max temperature is $maxtemp degrees $Units."
+Write-Host "The weather in $($location.Name), $($location.State) today features: $($weather.weather.description)."
+Write-Host "The minimum temperature for today is $mintemp degrees $Units."
+Write-Host "The max temperature for today is $maxtemp degrees $Units."
 Write-Host "The current temperature is $temperature degrees $Units."
