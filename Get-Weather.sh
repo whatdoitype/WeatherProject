@@ -67,7 +67,7 @@ lon=$(echo $location | grep -o '"lon":[^,]*' | sed 's/"lon"://')
 city=$(echo $location | grep -o 'name":[^,]*' | sed 's/name":"//; s/"//')
 state=$(echo $location | grep -o 'state":[^}]*' | sed 's/state":"//; s/"//')
 
-weather=$(get_weather_from_lat_lon $lat $lon "imperial" $APIKey)
+weather=$(get_weather_from_lat_lon $lat $lon $units $APIKey)
 
 description=$(echo $weather | grep -o 'description":[^,]*' | sed 's/description"://; s/"//g')
 maxtemp=$(echo $weather | grep -o 'temp_max":[^,]*' | sed 's/temp_max"://; s/"//g; s/\..*//')
