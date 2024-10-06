@@ -1,6 +1,23 @@
+# Enter API key for OpenWeatherMap
+# https://openweathermap.org/
 $APIKey = "98abd06c92bf652c48d3c50f9582113b"
 
 function Get-Weather{
+    param(
+        [Parameter()]
+        [string]
+        $City,
+        
+        [Parameter()]
+        [string]
+        $State
+    )
+    $location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
+    $weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey
+    return $weather
+}
+
+function Get-WeatherFromLatLon{
     param(
         [Parameter()]
         [string]
@@ -34,7 +51,7 @@ function Get-Weather{
 
 }
 
-function Get-Location{
+function Get-WeatherLocation{
     param(
         [Parameter()]
         [string]
@@ -65,6 +82,4 @@ function Get-Location{
     return $output
 }
 
-$location = Get-Location -City Houston -State Texas -APIKey $APIKey
-
-Get-Weather -Latitude $location.lat -Longitude $location.lon -APIKey $APIKey
+Get-Weather -City Houston -State Texas
