@@ -1,9 +1,9 @@
 param(
-    [Parameter()]
+    [Parameter(Mandatory = $true)]
     [string]
     $City,
     
-    [Parameter()]
+    [Parameter(Mandatory = $true)]
     [string]
     $State,
 
