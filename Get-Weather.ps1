@@ -105,9 +105,13 @@ $weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lo
 
 $temperature = [Math]::round($weather.main.temp)
 $mintemp = [Math]::round($weather.main.temp_min)
-$maxtemp = [Math]::round($weather.main.temp_max)    
+$maxtemp = [Math]::round($weather.main.temp_max)
 
-Write-Host "The weather in $($location.Name), $($location.State) today features: $($weather.weather.description)."
-Write-Host "The minimum temperature for today is $mintemp degrees $Units."
-Write-Host "The max temperature for today is $maxtemp degrees $Units."
-Write-Host "The current temperature is $temperature degrees $Units."
+[PSCustomObject]@{
+    City = $Location.Name
+    State = $Location.State
+    Description = $Weather.Weather.Description
+    MaximumTemperature = "$maxtemp" + [char]176 + "$($Units[0])"
+    MinmumTemperature = "$mintemp" + [char]176 + "$($Units[0])"
+    CurrentTemperature = "$temperature" + [char]176 + "$($Units[0])"
+}
