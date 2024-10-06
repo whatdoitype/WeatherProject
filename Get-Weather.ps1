@@ -1,42 +1,17 @@
-# Enter API key for OpenWeatherMap
-# https://openweathermap.org/
-$APIKey = "98abd06c92bf652c48d3c50f9582113b"
+param(
+    [Parameter()]
+    [string]
+    $City,
+    
+    [Parameter()]
+    [string]
+    $State,
 
-function Get-Weather{
-    param(
-        [Parameter()]
-        [string]
-        $City,
-        
-        [Parameter()]
-        [string]
-        $State,
-
-        [Parameter()]
-        [ValidateSet("Farenheit","Kelvin","Celsius")]
-        [string]
-        $Units = "Farenheit"
-    )
-
-    $tempUnit = switch ($Units){
-        "Farenheit" {"imperial"}
-        "Celsius" {"metric"}
-        "Kelvin" {"standard"}
-        default {"imperial"}
-    }
-
-    $location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
-    $weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey -Units $tempUnit
-
-    $temperature = [Math]::round($weather.main.temp)
-    $mintemp = [Math]::round($weather.main.temp_min)
-    $maxtemp = [Math]::round($weather.main.temp_max)    
-
-    Write-Host "The weather in $City, $State today features $($weather.weather.description)."
-    Write-Host "The min temperature is $mintemp degrees $Units."
-    Write-Host "The max temperature is $maxtemp degrees $Units."
-    Write-Host "The current temperature is $temperature degrees $Units."
-}
+    [Parameter()]
+    [ValidateSet("Farenheit","Kelvin","Celsius")]
+    [string]
+    $Units = "Farenheit"
+)
 
 function Get-WeatherFromLatLon{
     param(
@@ -108,4 +83,25 @@ function Get-WeatherLocation{
     return $output
 }
 
-Get-Weather -City "Tallahassee" -State "Florida"
+# Enter API key for OpenWeatherMap
+# https://openweathermap.org/
+$APIKey = "98abd06c92bf652c48d3c50f9582113b"
+
+$tempUnit = switch ($Units){
+    "Farenheit" {"imperial"}
+    "Celsius" {"metric"}
+    "Kelvin" {"standard"}
+    default {"imperial"}
+}
+
+$location = Get-WeatherLocation -City $city -State $State -APIKey $script:APIKey
+$weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $script:APIKey -Units $tempUnit
+
+$temperature = [Math]::round($weather.main.temp)
+$mintemp = [Math]::round($weather.main.temp_min)
+$maxtemp = [Math]::round($weather.main.temp_max)    
+
+Write-Host "The weather in $City, $State today features $($weather.weather.description)."
+Write-Host "The min temperature is $mintemp degrees $Units."
+Write-Host "The max temperature is $maxtemp degrees $Units."
+Write-Host "The current temperature is $temperature degrees $Units."
