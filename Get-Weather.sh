@@ -12,7 +12,7 @@ units=$3
 
 # Enter API key for OpenWeatherMap
 # https://openweathermap.org/
-APIKey="98abd06c92bf652c48d3c50f9582113b"
+APIKey=""
 
 function get_weather_from_lat_lon () {
     local baseURL="https://api.openweathermap.org/data/2.5/weather"
