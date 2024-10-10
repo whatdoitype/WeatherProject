@@ -17,45 +17,6 @@ param(
     $Units = "Farenheit"
 )
 
-function Get-WeatherFromLatLon{
-    param(
-        [Parameter()]
-        [string]
-        $Latitude,
-        
-        [Parameter()]
-        [string]
-        $Longitude,
-
-        [Parameter()]
-        [string]
-        $Units = "imperial",
-
-        [Parameter()]
-        [string]
-        $APIKey
-    )
-
-    $baseURL = "https://api.openweathermap.org/data/2.5/weather"
-
-    $Body = @{
-        appid = $APIKey
-        lat = $Latitude
-        lon = $Longitude
-        units = $Units
-    }
-
-    $params = @{
-        Uri = $baseURL
-        Method = "GET"
-        Body = $Body
-    }
-
-    $output = Invoke-RestMethod @params
-    return $output
-
-}
-
 function Get-WeatherLocation{
     param(
         [Parameter()]
@@ -100,6 +61,44 @@ function Get-WeatherLocation{
 }
 
 $location = Get-WeatherLocation -City $city -State $State -APIKey $OpenWeatherMapAPIKey
+
+function Get-WeatherFromLatLon{
+    param(
+        [Parameter()]
+        [string]
+        $Latitude,
+        
+        [Parameter()]
+        [string]
+        $Longitude,
+
+        [Parameter()]
+        [string]
+        $Units = "imperial",
+
+        [Parameter()]
+        [string]
+        $APIKey
+    )
+
+    $baseURL = "https://api.openweathermap.org/data/2.5/weather"
+
+    $Body = @{
+        appid = $APIKey
+        lat = $Latitude
+        lon = $Longitude
+        units = $Units
+    }
+
+    $params = @{
+        Uri = $baseURL
+        Method = "GET"
+        Body = $Body
+    }
+
+    $output = Invoke-RestMethod @params
+    return $output
+}
 
 $tempUnit = switch ($Units){
     "Farenheit" {"imperial"}
