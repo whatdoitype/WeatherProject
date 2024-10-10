@@ -7,15 +7,15 @@ param(
     [string]
     $State,
 
+    [Parameter(Mandatory = $true)]
+    [string]
+    $OpenWeatherMapAPIKey,
+
     [Parameter()]
     [ValidateSet("Farenheit","Kelvin","Celsius")]
     [string]
     $Units = "Farenheit"
 )
-
-# Enter API key for OpenWeatherMap
-# https://openweathermap.org/
-$APIKey = ""
 
 function Get-WeatherFromLatLon{
     param(
@@ -83,7 +83,13 @@ function Get-WeatherLocation{
         Body = $Body
     }
 
-    $output = Invoke-RestMethod @params
+    $output = try {
+        Invoke-RestMethod @params
+    }
+    catch {
+        Write-Error $_
+        break;
+    }
     
     if ($null -eq $output.name){
         Write-Error "$City, $State is not a valid location. Please try again."
@@ -93,6 +99,8 @@ function Get-WeatherLocation{
     return $output
 }
 
+$location = Get-WeatherLocation -City $city -State $State -APIKey $OpenWeatherMapAPIKey
+
 $tempUnit = switch ($Units){
     "Farenheit" {"imperial"}
     "Celsius" {"metric"}
@@ -100,8 +108,7 @@ $tempUnit = switch ($Units){
     default {"imperial"}
 }
 
-$location = Get-WeatherLocation -City $city -State $State -APIKey $APIKey
-$weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $APIKey -Units $tempUnit
+$weather = Get-WeatherFromLatLon -Latitude $location.lat -Longitude $location.lon -APIKey $OpenWeatherMapAPIKey -Units $tempUnit
 
 $temperature = [Math]::round($weather.main.temp)
 $mintemp = [Math]::round($weather.main.temp_min)
