@@ -21,52 +21,26 @@ then
     exit 1
 fi
 
-if [[ ! $3 ]]
-then
-    echo -e "Unit not specified, defaulting to imperial/Farenheit\n"
-fi
-
 if [[ ! $APIKey ]]
 then
     echo "Error: APIKey variable not defined"
     exit 1
 fi
 
+if [[ ! $3 ]]
+then
+    echo -e "Unit not specified, defaulting to imperial/Farenheit\n"
+    units="imperial"
+elif [[ ! $3 = "metric" && ! $3 = "imperial" && ! $3 = "standard" ]]
+then
+    echo -e "Unit parameter invalid, defaulting to imperial/Farenheit\n"
+    units="imperial"
+else
+    units=$3
+fi
+
 city=$1
 state=$2
-units=$3
-
-function get_weather_from_lat_lon () {
-    local baseURL="https://api.openweathermap.org/data/2.5/weather"
-    local lat=$1
-    local lon=$2
-    local units=$3
-    local APIKey=$4
-
-    local request="$baseURL?lat=$lat&lon=$lon&units=$units&appid=$APIKey"
-
-    local output=$(curl $request --silent)
-
-    echo $output
-}
-
-function get_weather_location() {
-    local baseURL="http://api.openweathermap.org/geo/1.0/direct"
-    local city=$1
-    local state=$2
-    local APIKey=$3
-
-    if [[ "$city" == *" "* ]]
-    then
-        city=$(echo "$city" | sed 's/ /+/g')
-    fi
-
-    local request="$baseURL?q=$city,$state&appid=$APIKey"
-
-    local output=$(curl $request --silent)
-
-    echo $output
-}
 
 case $units in
     imperial)
@@ -78,24 +52,48 @@ case $units in
     standard)
         tempUnit="K"
         ;;
-    *)
-        tempUnit="F"
-        units="imperial"
 esac
 
-location=$(get_weather_location "$city" "$state" "$APIKey")
+function get_weather_location() {
+    local baseURL="http://api.openweathermap.org/geo/1.0/direct"
 
-lat=$(echo $location | grep -o '"lat":[^,]*' | sed 's/"lat"://')
-lon=$(echo $location | grep -o '"lon":[^,]*' | sed 's/"lon"://')
-city=$(echo $location | grep -o 'name":[^,]*' | sed 's/name":"//; s/"//')
-state=$(echo $location | grep -o 'state":[^}]*' | sed 's/state":"//; s/"//')
+    if [[ "$city" == *" "* ]]
+    then
+        city=$(echo "$city" | sed 's/ /+/g')
+    fi
 
-weather=$(get_weather_from_lat_lon $lat $lon $units $APIKey)
+    local request="$baseURL?q=$city,$state&appid=$APIKey"
 
-description=$(echo $weather | grep -o 'description":[^,]*' | sed 's/description"://; s/"//g')
-maxtemp=$(echo $weather | grep -o 'temp_max":[^,]*' | sed 's/temp_max"://; s/"//g; s/\..*//')
-mintemp=$(echo $weather | grep -o 'temp_min":[^,]*' | sed 's/temp_min"://; s/"//g; s/\..*//')
+    local output=$(curl $request --silent)
 
-echo "The weather in $city, $state today features: $description."
+    lat=$(echo $output | grep -o '"lat":[^,]*' | sed 's/"lat"://')
+    lon=$(echo $output | grep -o '"lon":[^,]*' | sed 's/"lon"://')
+    cityName=$(echo $output | grep -o 'name":[^,]*' | sed 's/name":"//; s/"//')
+    stateName=$(echo $output | grep -o 'state":[^}]*' | sed 's/state":"//; s/"//')
+
+    if [[ ! $lat || ! $lon || ! $cityName || ! $stateName ]]
+    then
+        echo "Error: unable to find location, invalid parameters entered. Please try again."
+        exit 1
+    fi
+}
+
+get_weather_location
+
+function get_weather_from_lat_lon () {
+    local baseURL="https://api.openweathermap.org/data/2.5/weather"
+
+    local request="$baseURL?lat=$lat&lon=$lon&units=$units&appid=$APIKey"
+
+    local output=$(curl $request --silent)
+
+    description=$(echo $output | grep -o 'description":[^,]*' | sed 's/description"://; s/"//g')
+    maxtemp=$(echo $output | grep -o 'temp_max":[^,]*' | sed 's/temp_max"://; s/"//g; s/\..*//')
+    mintemp=$(echo $output | grep -o 'temp_min":[^,]*' | sed 's/temp_min"://; s/"//g; s/\..*//')
+}
+
+get_weather_from_lat_lon
+
+echo "The weather in $cityName, $stateName today features: $description."
 echo "The maximum temperature is $maxtemp degrees $tempUnit."
 echo "The minimum temperature is $mintemp degrees $tempUnit."
