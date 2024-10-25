@@ -6,13 +6,35 @@
 # Example:
 # ./Get-Weather.sh Houston Texas "metric"
 
+# Requires environment variable APIKey be defined for OpenWeatherMap
+# https://openweathermap.org/
+
+if [[ ! $1 ]]
+then
+    echo "Error: city parameter not specified"
+    exit 1
+fi
+
+if [[ ! $2 ]]
+then
+    echo "Error: state parameter not specified"
+    exit 1
+fi
+
+if [[ ! $3 ]]
+then
+    echo -e "Unit not specified, defaulting to imperial/Farenheit\n"
+fi
+
+if [[ ! $APIKey ]]
+then
+    echo "Error: APIKey variable not defined"
+    exit 1
+fi
+
 city=$1
 state=$2
 units=$3
-
-# Enter API key for OpenWeatherMap
-# https://openweathermap.org/
-APIKey=""
 
 function get_weather_from_lat_lon () {
     local baseURL="https://api.openweathermap.org/data/2.5/weather"
@@ -34,7 +56,8 @@ function get_weather_location() {
     local state=$2
     local APIKey=$3
 
-    if [[ "$city" == *" "* ]]; then
+    if [[ "$city" == *" "* ]]
+    then
         city=$(echo "$city" | sed 's/ /+/g')
     fi
 
@@ -60,7 +83,7 @@ case $units in
         units="imperial"
 esac
 
-location=$(get_weather_location "$city" "$state" $APIKey)
+location=$(get_weather_location "$city" "$state" "$APIKey")
 
 lat=$(echo $location | grep -o '"lat":[^,]*' | sed 's/"lat"://')
 lon=$(echo $location | grep -o '"lon":[^,]*' | sed 's/"lon"://')
